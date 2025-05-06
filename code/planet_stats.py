@@ -2,7 +2,7 @@ from planet_class import info
 
 
 num = 15
-planet = [] * num
+planet = [None] * num
 
 planet[0] = info(capital=1,comfort=1.1,rt=1.15,ovr_pro=1.15,max_building=20,max_elec=8,max_oar=6,max_food=9)
 planet[1] = info(fanzui=25,rt_property=0.75,max_building=15,max_elec=8,max_oar=6,max_food=5)

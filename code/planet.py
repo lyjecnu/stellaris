@@ -78,12 +78,13 @@ def raw_score(combo,avgpx):
 
  
  
-def mod_score_actor(worker,actor,avgpx,p):     #当干活的人不变时，求出最佳解法
+def mod_score_actor(worker,actor,avgpx,p):     #求出指定工作人数与演员，产生的实际产能
     
     #干活的人，演绎人员
     
     planet = copy.deepcopy(p)
     #print(planet.yiju)
+    
     
     robots = 0 
     doctors = 0
@@ -98,7 +99,7 @@ def mod_score_actor(worker,actor,avgpx,p):     #当干活的人不变时，求�
     
        
     provided_comfort = (5 + 3 * politician + actor * 10 + doctors * 5 + planet.comfort_change) * planet.comfort_pro
-    comfort_each = 0.92 * planet.comfort_consum * (1+(1-planet.yiju/100))
+    comfort_each = 1 * planet.comfort_consum * (1+(1-planet.yiju/100))
     comfort = provided_comfort - comfort_each * n - 5
         
     rt = (avgpx + c2h(provided_comfort,comfort) + planet.rt_change) * planet.rt_property
@@ -118,24 +119,35 @@ def mod_score_actor(worker,actor,avgpx,p):     #当干活的人不变时，求�
         
     
     score = 0
-    score = worker * (1+addition)  + (1 * actor * (1+addition)) / 4 - 0.25 * actor
-    score = score * 100 / n
+    addition = addition * (1 - (100 - planet.yiju)/200)
+    score = worker * (1+addition)
+    #+ (1 * actor * (1+addition)) / 4 - 0.25 * actor
+    #score = score * 100 / n
     
 
     return score
     
     
-def mod_max_score(worker,avgpx,planet):
+def mod_max_score(ovr,avgpx,planet):   #给每个星球分配一定的人口，求出最高效率的工人数
     
     max_score = 0
-    perfect_actor = 0
+    perfect_worker = 0
+    efficiency = 0
     
-    for actor in range(worker):
-        if(mod_score_actor(worker,actor,avgpx,planet) > max_score):
-            max_score = mod_score_actor(worker,actor,avgpx,planet)
-            perfect_actor = actor
+    for worker in range(ovr+1):
+        
+        fixed_staff = 2 + ovr // 30
+        if planet.yiju < 100:
+            fixed_staff = fixed_staff + 2
+        
+        if(mod_score_actor(worker,ovr-worker-fixed_staff,avgpx,planet) > max_score):
+            max_score = mod_score_actor(worker,ovr-worker-fixed_staff,avgpx,planet)
+            perfect_worker = worker
             
-    return (perfect_actor,max_score)
+            if perfect_worker > 0:
+                efficiency = max_score / perfect_worker
+            
+    return (perfect_worker,max_score,efficiency)   #最佳工人数，最佳产能
     
     
     
@@ -147,11 +159,11 @@ def main():
     dict = {}
 
 
-    for worker in range(10,50):
-        t = mod_max_score(worker,avgpx,p)
-        dict[str(worker)] = t[1]
+    for ovr in range(10,50):
+        t = mod_max_score(ovr,avgpx,p)
+        dict[str(ovr)] = t[0]
     
-       
+    print(dict)  
 
 if __name__ == '__main__':
     main()
